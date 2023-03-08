@@ -11,7 +11,10 @@ use std::thread::{sleep, JoinHandle};
 use std::time::Duration;
 use std::time::Instant;
 
-pub fn main(tx: Sender<StateMsg>, killswitch: Arc<AtomicBool>) {
+/// This one is my solution. The philosophers attempt to pick up both forks,
+/// and if they're unable to pick up both they drop any fork they did manage
+/// to pick up.
+pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
     let forks: Vec<Arc<Mutex<Fork>>> = (0..N_PHILOSOPHERS)
         .map(|_| Arc::new(Mutex::new(Fork)))
         .collect();
@@ -25,7 +28,7 @@ pub fn main(tx: Sender<StateMsg>, killswitch: Arc<AtomicBool>) {
             left_fork.clone(),
             right_fork.clone(),
             tx.clone(),
-            killswitch.clone(),
+            kill_switch.clone(),
         );
         philosophers.push(philosopher);
     }
@@ -52,7 +55,7 @@ pub struct Philosopher {
     left_fork: Arc<Mutex<Fork>>,
     right_fork: Arc<Mutex<Fork>>,
     tx: Sender<StateMsg>,
-    killswitch: Arc<AtomicBool>,
+    kill_switch: Arc<AtomicBool>,
 }
 
 impl Philosopher {
@@ -61,7 +64,7 @@ impl Philosopher {
         left_fork: Arc<Mutex<Fork>>,
         right_fork: Arc<Mutex<Fork>>,
         tx: Sender<StateMsg>,
-        killswitch: Arc<AtomicBool>,
+        kill_switch: Arc<AtomicBool>,
     ) -> Self {
         Self {
             id,
@@ -69,7 +72,7 @@ impl Philosopher {
             left_fork,
             right_fork,
             tx,
-            killswitch,
+            kill_switch: kill_switch,
         }
     }
 }
@@ -103,8 +106,8 @@ impl Diner for Philosopher {
                 // start to eat.
                 log::debug!("Philosopher {} is eating", self.id);
                 self.state = PhilosopherState::Eating;
-                self.send_state();
                 self.sleep();
+                self.send_state();
                 log::debug!("Philosopher {} is full", self.id);
             } else if self.has_starved_to_death() {
                 // Philosopher is hungry but could not pick up both forks, so
@@ -120,7 +123,7 @@ impl Diner for Philosopher {
     }
 
     fn is_killswitch_active(&self) -> bool {
-        self.killswitch.load(Ordering::Relaxed)
+        self.kill_switch.load(Ordering::Relaxed)
     }
 }
 

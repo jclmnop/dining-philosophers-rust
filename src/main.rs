@@ -33,7 +33,6 @@ fn main() {
 
     println!("\n~~RESOURCE HIERARCHY~~");
     run(resource_hierarchy::main);
-
 }
 
 fn run<F>(main_f: F)
@@ -63,8 +62,7 @@ where
                     state: PhilosopherState::Dead,
                 } => {
                     println!("Philosopher {id} has died from starvation!");
-                    meals_eaten = [0; N_PHILOSOPHERS];
-                    break 'main_loop;
+                    return
                 }
                 _ => {
                     println!("POOP");
