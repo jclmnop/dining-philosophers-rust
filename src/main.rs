@@ -48,7 +48,7 @@ where
     let start_time = Instant::now();
     let mut meals_eaten = [0; N_PHILOSOPHERS];
 
-    'main_loop: while start_time.elapsed().as_secs() < RUN_TIME_SECONDS {
+    while start_time.elapsed().as_secs() < RUN_TIME_SECONDS {
         match rx.try_recv() {
             Ok(msg) => match msg {
                 StateMsg {
@@ -102,7 +102,7 @@ pub trait Diner {
     /// starves to death or if the killswitch is activated.
     fn run(&mut self) {
         while self.current_state() != PhilosopherState::Dead
-            && !self.is_killswitch_active()
+            && !self.is_kill_switch_active()
         {
             self.think();
             self.eat();
@@ -117,7 +117,7 @@ pub trait Diner {
 
     fn current_state(&self) -> PhilosopherState;
 
-    fn is_killswitch_active(&self) -> bool;
+    fn is_kill_switch_active(&self) -> bool;
 
     /// Has the philosopher been hungry for longer than the maximum time?
     fn has_starved_to_death(&self) -> bool {

@@ -47,9 +47,9 @@ pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
     }
 }
 
-pub struct Fork;
+struct Fork;
 
-pub struct Philosopher {
+struct Philosopher {
     id: usize,
     state: PhilosopherState,
     left_fork: Arc<Mutex<Fork>>,
@@ -72,7 +72,7 @@ impl Philosopher {
             left_fork,
             right_fork,
             tx,
-            kill_switch: kill_switch,
+            kill_switch,
         }
     }
 }
@@ -122,7 +122,7 @@ impl Diner for Philosopher {
         self.state
     }
 
-    fn is_killswitch_active(&self) -> bool {
+    fn is_kill_switch_active(&self) -> bool {
         self.kill_switch.load(Ordering::Relaxed)
     }
 }
