@@ -61,60 +61,78 @@ of time.
 
 Performance without randomness is pretty similar, but for some reason when 
 some randomness is introduced the `two_forks` solution is consistently _slightly_
-more efficient than the control solution and the `break symmetry` solution.
-Obviously, I should run it a few more times and take an average of the results 
-but I've not got round to that yet. 
+more efficient than the control solution and the `break symmetry` solution, and 
+the `resource_hierarchy` solution _severely_ under-performs.
 
-I've yet to implement Dijkstra's semaphore solution and the resource hierarchy
-solution. 
+Obviously, I should run it many times and take an average of the results 
+but I've not got round to that. 
 
-Sample output (with 10s runtime):
+I've yet to implement Dijkstra's semaphore solution. 
+
+Latest output (with 10s runtime):
 ```shell
 ~~SEQUENTIAL (CONTROL)~~ [no randomness]
-        Total meals eaten: 1608
-        Philosopher 1: 322 meals
-        Philosopher 2: 321 meals
-        Philosopher 3: 322 meals
-        Philosopher 4: 321 meals
-        Philosopher 5: 322 meals
+        Total meals eaten: 1591
+        Philosopher 1: 319 meals
+        Philosopher 2: 318 meals
+        Philosopher 3: 318 meals
+        Philosopher 4: 318 meals
+        Philosopher 5: 318 meals
 
 ~~TWO FORKS~~ [no randomness]
-        Total meals eaten: 1626
-        Philosopher 1: 328 meals
+        Total meals eaten: 1619
+        Philosopher 1: 326 meals
         Philosopher 2: 322 meals
-        Philosopher 3: 323 meals
+        Philosopher 3: 324 meals
         Philosopher 4: 325 meals
-        Philosopher 5: 328 meals
+        Philosopher 5: 322 meals
 
 ~~BREAK SYMMETRY~~ [no randomness]
-        Total meals eaten: 1624
-        Philosopher 1: 311 meals
-        Philosopher 2: 335 meals
-        Philosopher 3: 334 meals
-        Philosopher 4: 334 meals
-        Philosopher 5: 310 meals
+        Total meals eaten: 1622
+        Philosopher 1: 318 meals
+        Philosopher 2: 330 meals
+        Philosopher 3: 330 meals
+        Philosopher 4: 326 meals
+        Philosopher 5: 318 meals
+
+~~RESOURCE HIERARCHY~~ [no randomness]
+        Total meals eaten: 1625
+        Philosopher 1: 325 meals
+        Philosopher 2: 325 meals
+        Philosopher 3: 325 meals
+        Philosopher 4: 325 meals
+        Philosopher 5: 325 meals
 
 ~~SEQUENTIAL (CONTROL)~~ [with randomness]
-        Total meals eaten: 2646
-        Philosopher 1: 529 meals
-        Philosopher 2: 529 meals
-        Philosopher 3: 530 meals
-        Philosopher 4: 529 meals
-        Philosopher 5: 529 meals
+        Total meals eaten: 2612
+        Philosopher 1: 523 meals
+        Philosopher 2: 522 meals
+        Philosopher 3: 523 meals
+        Philosopher 4: 522 meals
+        Philosopher 5: 522 meals
 
 ~~TWO FORKS~~ [with randomness]
-        Total meals eaten: 2820
-        Philosopher 1: 575 meals
-        Philosopher 2: 547 meals
-        Philosopher 3: 572 meals
-        Philosopher 4: 557 meals
-        Philosopher 5: 569 meals
+        Total meals eaten: 2863
+        Philosopher 1: 581 meals
+        Philosopher 2: 559 meals
+        Philosopher 3: 574 meals
+        Philosopher 4: 588 meals
+        Philosopher 5: 561 meals
 
 ~~BREAK SYMMETRY~~ [with randomness]
-        Total meals eaten: 2782
-        Philosopher 1: 512 meals
-        Philosopher 2: 639 meals
-        Philosopher 3: 580 meals
-        Philosopher 4: 557 meals
-        Philosopher 5: 494 meals
+        Total meals eaten: 2824
+        Philosopher 1: 522 meals
+        Philosopher 2: 642 meals
+        Philosopher 3: 589 meals
+        Philosopher 4: 562 meals
+        Philosopher 5: 509 meals
+
+~~RESOURCE HIERARCHY~~ [with randomness]
+        Total meals eaten: 2042
+        Philosopher 1: 406 meals
+        Philosopher 2: 410 meals
+        Philosopher 3: 408 meals
+        Philosopher 4: 412 meals
+        Philosopher 5: 406 meals
+
 ```
