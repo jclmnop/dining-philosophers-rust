@@ -14,7 +14,7 @@ use std::time::Instant;
 /// This one is my solution. The philosophers attempt to pick up both forks,
 /// and if they're unable to pick up both they drop any fork they did manage
 /// to pick up.
-pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
+pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>, random: bool) {
     let forks: Vec<Arc<Mutex<Fork>>> = (0..N_PHILOSOPHERS)
         .map(|_| Arc::new(Mutex::new(Fork)))
         .collect();
@@ -29,6 +29,7 @@ pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
             right_fork.clone(),
             tx.clone(),
             kill_switch.clone(),
+            random,
         );
         philosophers.push(philosopher);
     }
@@ -56,6 +57,7 @@ struct Philosopher {
     right_fork: Arc<Mutex<Fork>>,
     tx: Sender<StateMsg>,
     kill_switch: Arc<AtomicBool>,
+    random: bool,
 }
 
 impl Philosopher {
@@ -65,6 +67,7 @@ impl Philosopher {
         right_fork: Arc<Mutex<Fork>>,
         tx: Sender<StateMsg>,
         kill_switch: Arc<AtomicBool>,
+        random: bool,
     ) -> Self {
         Self {
             id,
@@ -73,6 +76,7 @@ impl Philosopher {
             right_fork,
             tx,
             kill_switch,
+            random,
         }
     }
 }
@@ -90,7 +94,7 @@ impl Diner for Philosopher {
     fn think(&mut self) {
         log::debug!("Philosopher {} is thinking", self.id);
         self.state = PhilosopherState::Thinking;
-        self.sleep();
+        self.sleep(self.random);
 
         log::debug!("Philosopher {} is hungry", self.id);
         self.state = PhilosopherState::Hungry(Instant::now());
@@ -106,7 +110,7 @@ impl Diner for Philosopher {
                 // start to eat.
                 log::debug!("Philosopher {} is eating", self.id);
                 self.state = PhilosopherState::Eating;
-                self.sleep();
+                self.sleep(self.random);
                 self.send_state();
                 log::debug!("Philosopher {} is full", self.id);
             } else if self.has_starved_to_death() {
@@ -126,4 +130,3 @@ impl Diner for Philosopher {
         self.kill_switch.load(Ordering::Relaxed)
     }
 }
-

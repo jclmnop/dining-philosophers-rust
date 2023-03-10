@@ -1,10 +1,10 @@
+use crate::{Diner, PhilosopherState, StateMsg, N_PHILOSOPHERS};
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, Sender, SyncSender};
+use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use std::time::Instant;
-use crate::{Diner, N_PHILOSOPHERS, PhilosopherState, StateMsg};
 
 const PHILOSOPHER_ORDER: [usize; N_PHILOSOPHERS] = [1, 3, 5, 2, 4];
 
@@ -13,7 +13,7 @@ const PHILOSOPHER_ORDER: [usize; N_PHILOSOPHERS] = [1, 3, 5, 2, 4];
 /// telling the philosophers to eat if they're hungry and can pick up both forks.
 ///
 /// To be honest, I found this more difficult than doing it in a "normal" way.
-pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
+pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>, random: bool) {
     let forks: Vec<Arc<Mutex<Fork>>> = (0..N_PHILOSOPHERS)
         .map(|_| Arc::new(Mutex::new(Fork)))
         .collect();
@@ -32,6 +32,7 @@ pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
             tx.clone(),
             kill_switch.clone(),
             cmd_rx,
+            random,
         );
         philosophers.push(philosopher);
         philosopher_cmd_txs.push(cmd_tx);
@@ -49,15 +50,15 @@ pub fn main(tx: Sender<StateMsg>, kill_switch: Arc<AtomicBool>) {
     // Run the sequential loop until kill_switch is active
     while !kill_switch.load(Ordering::Relaxed) {
         for i in &PHILOSOPHER_ORDER {
-            let cmd_tx = &philosopher_cmd_txs[i-1];
+            let cmd_tx = &philosopher_cmd_txs[i - 1];
             if kill_switch.load(Ordering::Relaxed) {
                 cmd_tx.send(PhilosopherCommand::Stop).unwrap();
             } else {
                 // Sync channel has buffer size of 0 so sending blocks while
                 // philosopher is thinking or waiting to eat.
                 match cmd_tx.send(PhilosopherCommand::Eat) {
-                    Ok(_) => {},
-                    Err(_) => break
+                    Ok(_) => {}
+                    Err(_) => break,
                 }
             }
         }
@@ -83,6 +84,7 @@ struct Philosopher {
     tx: Sender<StateMsg>,
     kill_switch: Arc<AtomicBool>,
     cmd_rx: Receiver<PhilosopherCommand>,
+    random: bool,
 }
 
 impl Philosopher {
@@ -92,7 +94,8 @@ impl Philosopher {
         right_fork: Arc<Mutex<Fork>>,
         tx: Sender<StateMsg>,
         kill_switch: Arc<AtomicBool>,
-        cmd_rx: Receiver<PhilosopherCommand>
+        cmd_rx: Receiver<PhilosopherCommand>,
+        random: bool,
     ) -> Self {
         Self {
             id,
@@ -101,7 +104,8 @@ impl Philosopher {
             right_fork,
             tx,
             kill_switch,
-            cmd_rx
+            cmd_rx,
+            random,
         }
     }
 }
@@ -140,7 +144,7 @@ impl Diner for Philosopher {
             _ => {
                 log::debug!("Philosopher {} is thinking", self.id);
                 self.state = PhilosopherState::Thinking;
-                self.sleep();
+                self.sleep(self.random);
 
                 log::debug!("Philosopher {} is hungry", self.id);
                 self.state = PhilosopherState::Hungry(Instant::now());
@@ -160,7 +164,7 @@ impl Diner for Philosopher {
                         // start to eat.
                         log::debug!("Philosopher {} is eating", self.id);
                         self.state = PhilosopherState::Eating;
-                        self.sleep();
+                        self.sleep(self.random);
                         self.send_state();
                         log::debug!("Philosopher {} is full", self.id);
                         eaten = true;

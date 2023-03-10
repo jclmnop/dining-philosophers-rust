@@ -1,8 +1,9 @@
-mod two_forks;
-mod sequential;
 mod resource_hierarchy;
 mod semaphores;
+mod sequential;
+mod two_forks;
 
+use rand::{thread_rng, Rng};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Sender, TryRecvError};
 use std::sync::{mpsc, Arc};
@@ -22,28 +23,40 @@ const HUNGER_THRESHOLD_MILLIS: u128 = MAX_DURATION_MILLIS as u128 * 10;
 const RUN_TIME_SECONDS: u64 = 10;
 
 fn main() {
-    println!("~~SEQUENTIAL (CONTROL)~~");
-    run(sequential::main);
+    println!("~~SEQUENTIAL (CONTROL)~~ [no randomness]");
+    run(sequential::main, false);
 
-    println!("\n~~AKIMBO FORKS~~");
-    run(two_forks::main);
+    println!("\n~~AKIMBO FORKS~~ [no randomness]");
+    run(two_forks::main, false);
 
-    println!("\n~~DIJKSTRA'S SEMAPHORES~~");
-    run(semaphores::main);
+    println!("\n~~DIJKSTRA'S SEMAPHORES~~ [no randomness]");
+    run(semaphores::main, false);
 
-    println!("\n~~RESOURCE HIERARCHY~~");
-    run(resource_hierarchy::main);
+    println!("\n~~RESOURCE HIERARCHY~~ [no randomness]");
+    run(resource_hierarchy::main, false);
+
+    println!("\n~~SEQUENTIAL (CONTROL)~~ [with randomness]");
+    run(sequential::main, true);
+
+    println!("\n~~AKIMBO FORKS~~ [with randomness]");
+    run(two_forks::main, true);
+
+    println!("\n~~DIJKSTRA'S SEMAPHORES~~ [with randomness]");
+    run(semaphores::main, true);
+
+    println!("\n~~RESOURCE HIERARCHY~~ [with randomness]");
+    run(resource_hierarchy::main, true);
 }
 
-fn run<F>(main_f: F)
+fn run<F>(main_f: F, random: bool)
 where
-    F: Send + Fn(Sender<StateMsg>, Arc<AtomicBool>) -> () + 'static,
+    F: Send + Fn(Sender<StateMsg>, Arc<AtomicBool>, bool) -> () + 'static,
 {
     let (tx, rx) = mpsc::channel::<StateMsg>();
-    let killswitch = Arc::new(AtomicBool::new(false));
-    let cloned_killswitch = killswitch.clone();
+    let kill_switch = Arc::new(AtomicBool::new(false));
+    let cloned_kill_switch = kill_switch.clone();
     let main_handle = thread::spawn(move || {
-        main_f(tx, cloned_killswitch);
+        main_f(tx, cloned_kill_switch, random);
     });
     let start_time = Instant::now();
     let mut meals_eaten = [0; N_PHILOSOPHERS];
@@ -62,21 +75,19 @@ where
                     state: PhilosopherState::Dead,
                 } => {
                     println!("Philosopher {id} has died from starvation!");
-                    return
+                    return;
                 }
-                _ => {
-                    println!("POOP");
-                }
+                _ => {}
             },
             Err(TryRecvError::Disconnected) => {
                 println!("Oh no!");
-                return
-            },
+                return;
+            }
             Err(TryRecvError::Empty) => {}
         }
     }
 
-    killswitch.store(true, Ordering::Relaxed);
+    kill_switch.store(true, Ordering::Relaxed);
     main_handle.join().unwrap();
     println!("\tTotal meals eaten: {}", meals_eaten.iter().sum::<i32>());
     for (i, n) in meals_eaten.iter().enumerate() {
@@ -133,15 +144,16 @@ pub trait Diner {
     }
 
     /// Eat or think for a random amount of time.
-    fn sleep(&self) {
-        thread::sleep(Self::generate_duration());
+    fn sleep(&self, random: bool) {
+        thread::sleep(Self::generate_duration(random));
     }
 
-    fn generate_duration() -> Duration {
-        // Currently disabled to reduce randomness for benchmarks
-        // let millis: u64 = thread_rng()
-        //     .gen_range(MIN_DURATION_MILLIS..MAX_DURATION_MILLIS);
-        let millis = MAX_DURATION_MILLIS;
+    fn generate_duration(random: bool) -> Duration {
+        let millis: u64 = if random {
+            thread_rng().gen_range(MIN_DURATION_MILLIS..MAX_DURATION_MILLIS)
+        } else {
+            MAX_DURATION_MILLIS
+        };
         Duration::from_millis(millis)
     }
 }
