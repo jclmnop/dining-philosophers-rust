@@ -27,7 +27,7 @@ fn main() {
     println!("~~SEQUENTIAL (CONTROL)~~ [no randomness]");
     run(sequential::main, false);
 
-    println!("\n~~AKIMBO FORKS~~ [no randomness]");
+    println!("\n~~TWO FORKS~~ [no randomness]");
     run(two_forks::main, false);
 
     println!("\n~~BREAK SYMMETRY~~ [no randomness]");
@@ -42,7 +42,7 @@ fn main() {
     println!("\n~~SEQUENTIAL (CONTROL)~~ [with randomness]");
     run(sequential::main, true);
 
-    println!("\n~~AKIMBO FORKS~~ [with randomness]");
+    println!("\n~~TWO FORKS~~ [with randomness]");
     run(two_forks::main, true);
 
     println!("\n~~BREAK SYMMETRY~~ [with randomness]");

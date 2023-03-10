@@ -51,3 +51,70 @@ probably not much of an issue with only two philosophers attempting to pick up
 each fork, I doubt this is a very scalable solution for applications where more
 than two active processes require conditional access to a shared resource. 
 However, to me at least, it was the most obvious and intuitive solution. 
+
+# Performance Comparison
+I decided to implement a few different solutions so I could test their performance 
+against each other. I do two runs for each solution, one with randomness where 
+thinking and eating both take a random amount of time within a certain range, 
+and one without randomness where both thinking and eating take a fixed amount 
+of time. 
+
+Performance without randomness is pretty similar, but for some reason when 
+some randomness is introduced the `two_forks` solution is consistently _slightly_
+more efficient than the control solution and the `break symmetry` solution.
+Obviously, I should run it a few more times and take an average of the results 
+but I've not got round to that yet. 
+
+I've yet to implement Dijkstra's semaphore solution and the resource hierarchy
+solution. 
+
+Sample output (with 10s runtime):
+```shell
+~~SEQUENTIAL (CONTROL)~~ [no randomness]
+        Total meals eaten: 1608
+        Philosopher 1: 322 meals
+        Philosopher 2: 321 meals
+        Philosopher 3: 322 meals
+        Philosopher 4: 321 meals
+        Philosopher 5: 322 meals
+
+~~TWO FORKS~~ [no randomness]
+        Total meals eaten: 1626
+        Philosopher 1: 328 meals
+        Philosopher 2: 322 meals
+        Philosopher 3: 323 meals
+        Philosopher 4: 325 meals
+        Philosopher 5: 328 meals
+
+~~BREAK SYMMETRY~~ [no randomness]
+        Total meals eaten: 1624
+        Philosopher 1: 311 meals
+        Philosopher 2: 335 meals
+        Philosopher 3: 334 meals
+        Philosopher 4: 334 meals
+        Philosopher 5: 310 meals
+
+~~SEQUENTIAL (CONTROL)~~ [with randomness]
+        Total meals eaten: 2646
+        Philosopher 1: 529 meals
+        Philosopher 2: 529 meals
+        Philosopher 3: 530 meals
+        Philosopher 4: 529 meals
+        Philosopher 5: 529 meals
+
+~~TWO FORKS~~ [with randomness]
+        Total meals eaten: 2820
+        Philosopher 1: 575 meals
+        Philosopher 2: 547 meals
+        Philosopher 3: 572 meals
+        Philosopher 4: 557 meals
+        Philosopher 5: 569 meals
+
+~~BREAK SYMMETRY~~ [with randomness]
+        Total meals eaten: 2782
+        Philosopher 1: 512 meals
+        Philosopher 2: 639 meals
+        Philosopher 3: 580 meals
+        Philosopher 4: 557 meals
+        Philosopher 5: 494 meals
+```
