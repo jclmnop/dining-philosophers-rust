@@ -1,3 +1,4 @@
+mod break_symmetry;
 mod resource_hierarchy;
 mod semaphores;
 mod sequential;
@@ -29,6 +30,9 @@ fn main() {
     println!("\n~~AKIMBO FORKS~~ [no randomness]");
     run(two_forks::main, false);
 
+    println!("\n~~BREAK SYMMETRY~~ [no randomness]");
+    run(break_symmetry::main, false);
+
     println!("\n~~DIJKSTRA'S SEMAPHORES~~ [no randomness]");
     run(semaphores::main, false);
 
@@ -40,6 +44,9 @@ fn main() {
 
     println!("\n~~AKIMBO FORKS~~ [with randomness]");
     run(two_forks::main, true);
+
+    println!("\n~~BREAK SYMMETRY~~ [with randomness]");
+    run(break_symmetry::main, true);
 
     println!("\n~~DIJKSTRA'S SEMAPHORES~~ [with randomness]");
     run(semaphores::main, true);
